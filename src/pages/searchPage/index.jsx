@@ -1,9 +1,8 @@
+import "./index.css";
 import { Link } from "react-router-dom";
-import { useStateValue } from "../StateProvider";
-import useGoogleSearch from "../useGoogleSearch";
-import Search from "./Search.jsx";
+import useGoogleSearch from "../../hooks/useGoogleSearch";
+import Search from "../../components/search";
 
-import "./SearchPage.css";
 import SearchIcon from "@mui/icons-material/Search";
 
 import {
@@ -15,17 +14,28 @@ import {
 } from "@mui/icons-material";
 
 function SearchPage() {
-  const [{ term }, dispatch] = useStateValue();
-  // const { data } = useGoogleSearch(term);
-  // console.log(data);
+  const searchTerm = getSearchTerm();
+  const { data, loading } = useGoogleSearch(searchTerm);
+
+  function getSearchTerm() {
+    // Get the current URL search parameters
+    const searchParams = new URLSearchParams(window.location.search);
+
+    // Access specific query parameters
+    const term = searchParams.get("term");
+
+    return term;
+  }
+
   return (
     <div className="searchPage">
       <div className="searchPage__header">
         <Link to="/">
           <img className="searchPage__logo" src="img/logo.png" alt="Google" />
         </Link>
+
         <div className="searchPage__headerBody">
-          <Search hideButtons />
+          <Search hideButtons value={searchTerm} />
           <div className="searchPage__options">
             <div className="searchPage__optionsLeft">
               <div className="searchPage__option">
@@ -64,22 +74,26 @@ function SearchPage() {
           </div>
         </div>
       </div>
-      {/* {true && (
-  <div className="searchPage__results">
-    <p className="searchPage_resultCount">
-      About {data?.searchInformation.formattedTotalResults} results ({data?.searchInformation.formattedSearchTime} seconds) for {term}
-    </p>
-    {data?.items.map(item => (
-      <div className='searchPage result' key={item.link}>
-        <a href={item.link}>{item.displayLink}</a>
-        <a className="searchPage__resultTitle" href={item.link}>
-          <h2>{item.title}</h2>
-        </a>
-        <p className="searchPage__resultSnippet">{item.snippet}</p>
-      </div>
-    ))}
-  </div>
-)} */}
+
+      {!loading && (
+        <div className="searchPage__results">
+          <p className="searchPage_resultCount">
+            About {data?.searchInformation.formattedTotalResults} results (
+            {data?.searchInformation.formattedSearchTime} seconds) for{" "}
+            {searchTerm}
+          </p>
+
+          {data?.items.map((item) => (
+            <div className="searchPage result" key={item.link}>
+              <a href={item.link}>{item.displayLink}</a>
+              <a className="searchPage__resultTitle" href={item.link}>
+                <h2>{item.title}</h2>
+              </a>
+              <p className="searchPage__resultSnippet">{item.snippet}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
